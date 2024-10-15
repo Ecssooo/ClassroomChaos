@@ -166,10 +166,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 464685f315280c5419fc8c19413f0cfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _maxTeacherTimer: 10
-  _minTeacherTimer: 5
-  _timerTeacherStayRegard: 0
   _playerLife: 2
+  _probabilityTeacherRegard: 90
+  _timerTeacherStayRegard: 5
+  teacherCooldown: 3
 --- !u!1 &280541768
 GameObject:
   m_ObjectHideFlags: 0

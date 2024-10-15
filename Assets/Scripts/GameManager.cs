@@ -20,16 +20,18 @@ public class GameManager : MonoBehaviour
 
     private TeacherStates _teacherState;
     public TeacherStates TeacherState { get { return _teacherState; } set { _teacherState = value; } }
-
-    [Header("Timer")]
-    [SerializeField] private int _maxTeacherTimer;
-    [SerializeField] private int _minTeacherTimer;
-    [SerializeField] private float _timerTeacherStayRegard;
-    private float _currentTeacherTimer;
-
-    [Header("Player")] 
+    
+    [Header("Player Parameters")] 
     [SerializeField] private int _playerLife;
     public int PlayerLife { get { return _playerLife; } set { _playerLife = value; } }
+
+    
+    [Header("Teacher Parameters")]
+    [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
+    [SerializeField] private float _timerTeacherStayRegard;
+    [SerializeField] private float teacherCooldown;
+    public int ProbalitiyTeacherRegard { get { return _probabilityTeacherRegard; } set { _probabilityTeacherRegard = value; } }
+    
     
     public void Awake()
     {
@@ -73,7 +75,7 @@ public class GameManager : MonoBehaviour
                     _playerState = PlayerStates.Waiting;
                     
                     //Start Timer
-                    StartCoroutine(TeacherTimer(GenerateFloat(_minTeacherTimer, _maxTeacherTimer)));
+                    StartCoroutine(TeacherTimer());
                     
                     //UIManager
                     UIManager.Instance.UnLoadUI("startscreen");
@@ -161,27 +163,41 @@ public class GameManager : MonoBehaviour
     }
     
     
-    IEnumerator TeacherTimer(float timer)
+    IEnumerator TeacherTimer()
     {
-        //Params : Time teacher stay in Writing state
-        yield return new WaitForSeconds(timer);
-        _teacherState = TeacherStates.Regard;
-        StartCoroutine(TeacherResetTimer(_timerTeacherStayRegard));
+        //
+        yield return new WaitForSeconds(1);
+        if (TeacherChangeState(_probabilityTeacherRegard) && _teacherState != TeacherStates.Cooldown)
+        {
+            _teacherState = TeacherStates.Regard;
+            StartCoroutine(TeacherResetTimer());
+        }
+        else
+        {
+            StopCoroutine(TeacherTimer());
+            StartCoroutine(TeacherTimer());
+        }
     }
 
-    IEnumerator TeacherResetTimer(float timer)
+    IEnumerator TeacherResetTimer()
     {
         //Params : Time teacher stay in Regard state
-        yield return new WaitForSeconds(timer);
-        _teacherState = TeacherStates.Writing;
-        StartCoroutine(TeacherTimer(GenerateFloat(_minTeacherTimer, _maxTeacherTimer)));
+        yield return new WaitForSeconds(_timerTeacherStayRegard);
+        _teacherState = TeacherStates.Cooldown;
+        StartCoroutine(TeacherOnCooldown());
     }
 
-    private float GenerateFloat(int min,int max)
+    IEnumerator TeacherOnCooldown()
+    {
+        yield return new WaitForSeconds(teacherCooldown);
+        _teacherState = TeacherStates.Writing;
+        StartCoroutine(TeacherTimer());
+    }
+
+    private bool TeacherChangeState(int probability)
     {
         Random random = new Random();
-        int unit = random.Next(min, max);
-        float dec = random.Next(0, 99) * 0.01f;
-        return unit + dec;
+        int prob = random.Next(probability, 100);
+        return prob == probability+1;
     }
 }
