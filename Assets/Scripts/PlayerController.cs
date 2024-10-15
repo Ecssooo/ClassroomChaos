@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
         {
             // Activer la sarbacane et le viseur
             isAiming = true;
+            GameManager.Instance.PlayerState = PlayerStates.Shooting;
             sarbacaneInstance = Instantiate(sarbacanePrefab, sarbacaneSpawnPoint.position, sarbacaneSpawnPoint.rotation, sarbacaneSpawnPoint);
             // Afficher le viseur (ui, comme ça il reste au centre de l'écran)
         }
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
             // Désactiver la sarbacane et le viseur
             isAiming = false;
             Destroy(sarbacaneInstance);
+            GameManager.Instance.PlayerState = PlayerStates.Waiting;
             // Masquer le viseur
         }
     }
