@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using Random = System.Random;
 
@@ -33,8 +30,6 @@ public class GameManager : MonoBehaviour
     [Header("Player")] 
     [SerializeField] private int _playerLife;
     public int PlayerLife { get { return _playerLife; } set { _playerLife = value; } }
-    
-    
     
     public void Awake()
     {
@@ -72,23 +67,46 @@ public class GameManager : MonoBehaviour
                 Debug.Log("StartScreen");
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Init State
                     _gameState = GameStates.RoundInProgress;
                     _teacherState = TeacherStates.Writing;
                     _playerState = PlayerStates.Waiting;
+                    
+                    //Start Timer
                     StartCoroutine(TeacherTimer(GenerateFloat(_minTeacherTimer, _maxTeacherTimer)));
                     
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("startscreen");
+                    UIManager.Instance.LoadUI("roundscreen");
                 }
                 break;
             case(GameStates.RoundInProgress):
                 Debug.Log("RoundInProgress");
+                
+                //End round Condition
                 if (_playerLife <= 0)
+                {
+                    //Change State
                     _gameState = GameStates.LoseScreen;
+                    _teacherState = TeacherStates.WaitingScreen;
+                    _playerState = PlayerStates.WaitingScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("roundscreen");
+                    UIManager.Instance.LoadUI("losescreen");
+                }
+                //Round Loop
                 RoundLoop();
                 break;
             case(GameStates.LoseScreen):
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Change State
                     _gameState = GameStates.StartScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("losescreen");
+                    UIManager.Instance.LoadUI("startscreen");
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -101,7 +119,12 @@ public class GameManager : MonoBehaviour
                 Debug.Log("EndScreen");
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Change State
                     _gameState = GameStates.StartScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("endscreen");
+                    UIManager.Instance.LoadUI("startscreen");
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
