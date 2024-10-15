@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
-
+using Random = System.Random;
 
 
 public class GameManager : MonoBehaviour
@@ -23,6 +23,12 @@ public class GameManager : MonoBehaviour
 
     private TeacherStates _teacherState;
     public TeacherStates TeacherState { get { return _teacherState; } set { _teacherState = value; } }
+
+    [Header("Timer")]
+    [SerializeField] private float _maxTeacherTimer;
+    [SerializeField] private float _minTeacherTimer;
+    [SerializeField] private float _timerTeacherStayRegard;
+    private float _currentTeacherTimer;
     
     
     public void Awake()
@@ -92,5 +98,22 @@ public class GameManager : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    IEnumerator TeacherTimer(float timer)
+    {
+        //Params : Time teacher stay in Writing state
+        yield return new WaitForSeconds(timer);
+        _teacherState = TeacherStates.Regard;
+        StartCoroutine(TeacherResetTimer(_timerTeacherStayRegard));
+    }
+
+    IEnumerator TeacherResetTimer(float timer)
+    {
+        //Params : Time teacher stay in Regard state
+        yield return new WaitForSeconds(timer);
+        _teacherState = TeacherStates.Writing;
+        Random random = new Random();
+        double rdm = random.NextDouble();
     }
 }
