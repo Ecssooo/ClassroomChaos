@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 
@@ -37,5 +38,59 @@ public class GameManager : MonoBehaviour
         }
 
         DontDestroyOnLoad(this.gameObject);
+    }
+
+    public void Start()
+    {
+        _gameState = GameStates.StartScreen;
+        _playerState = PlayerStates.WaitingScreen;
+        _teacherState = TeacherStates.WaitingScreen;
+    }
+
+    public void Update()
+    {
+        GameLoop();
+    }
+
+    private void GameLoop()
+    {
+        switch (_gameState)
+        {
+            case(GameStates.StartScreen):
+                
+                Debug.Log("StartScreen");
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    _gameState = GameStates.RoundInProgress;
+                }
+                break;
+            case(GameStates.RoundInProgress):
+                Debug.Log("RoundInProgress");
+                break;
+            case(GameStates.LoseScreen):
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    _gameState = GameStates.StartScreen;
+                }
+
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    Application.Quit();
+                }
+                Debug.Log("Lose");
+                break;
+            case(GameStates.End):
+                Debug.Log("EndScreen");
+                if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    _gameState = GameStates.StartScreen;
+                }
+
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    Application.Quit();
+                }
+                break;
+        }
     }
 }

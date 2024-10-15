@@ -11,13 +11,16 @@ public enum GameStates
 }
 
 public enum PlayerStates {
-    Shoot,
-    Craft,
-    Reload
+    WaitingScreen,
+    Waiting,
+    Shooting,
+    Crafting,
+    Reloading
 }
 
 public enum TeacherStates
 {
+    WaitingScreen,
     Writing,
     Regard
 }
