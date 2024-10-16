@@ -6,10 +6,7 @@ using Random = System.Random;
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
-    public static GameManager Instance
-    {
-        get { return _instance; }
-    }
+    public static GameManager Instance { get { return _instance; } }
 
     [Header("GameStates")] 
     private GameStates _gameState;
@@ -25,12 +22,59 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _playerLife;
     public int PlayerLife { get { return _playerLife; } set { _playerLife = value; } }
 
-    
-    [Header("Teacher Parameters")]
+
+    [Header("Teacher Parameters")] 
+    [SerializeField] private TeacherController _teacherController;
     [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
     [SerializeField] private float _timerTeacherStayRegard;
     [SerializeField] private float teacherCooldown;
-    public int ProbalitiyTeacherRegard { get { return _probabilityTeacherRegard; } set { _probabilityTeacherRegard = value; } }
+    
+    private int _currentProbaTeacherRegard;
+    public int CurrentProbaTeacherRegard { get { return _currentProbaTeacherRegard; } set { _currentProbaTeacherRegard = value; } }
+    public int ProbabilityTeacherRegard { get { return _probabilityTeacherRegard; } }
+    
+    public float TimerTeacherStayRegard { get { return _timerTeacherStayRegard; } }
+    
+    public float TeacherCooldown { get { return teacherCooldown; } }
+
+    #region Noise Level Probability
+    [Header("Probability by Noise")]
+    [SerializeField] private int _firstLevelNoise;
+    [SerializeField] private int _secondeLevelNoise;
+    [SerializeField] private int _thirdLevelNoise;
+    [SerializeField] private int _firstLevelProba;
+    [SerializeField] private int _secondeLevelProba;
+    [SerializeField] private int _thirdLevelProba;
+    
+    #region Accesseurs
+    
+    public int FirstLevelNoise { get { return _firstLevelNoise; } }
+    public int SecondeLevelNoise { get { return _secondeLevelNoise; } }
+    public int ThirdLevelNoise { get { return _thirdLevelNoise; } }
+    public int FirstLevelProba { get { return _firstLevelProba; } }
+    public int SecodeLevelProba { get { return _secondeLevelProba; } }
+    public int ThirdLevelProba { get { return _thirdLevelProba; } }
+
+    #endregion
+    #endregion
+    
+    
+    
+    [Header("Noise Controller")]
+    [SerializeField] private NoiseController _noiseController;
+    private float _noiseLevel;
+    [SerializeField] private float _decreaseNoiseLevel;
+    [SerializeField] private float _craftNoise;
+    [SerializeField] private float _shootNoise;
+    [SerializeField] private float _hitNoise;
+    [SerializeField] private float _missNoise;
+    public NoiseController NoiseController { get { return _noiseController; } }
+    public float NoiseLevel { get { return _noiseLevel; } set { _noiseLevel = value; } }
+    public float CraftNoise { get { return _craftNoise; } }
+    public float ShootNoise { get { return _shootNoise; } }
+    public float HitNoise { get { return _hitNoise; } }
+    public float MissNoise { get { return _missNoise; } }
+    
     
     
     public void Awake()
@@ -50,9 +94,13 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
+        //Init States
         _gameState = GameStates.StartScreen;
         _playerState = PlayerStates.WaitingScreen;
         _teacherState = TeacherStates.WaitingScreen;
+        
+        //Init Variables
+        _currentProbaTeacherRegard = _probabilityTeacherRegard;
     }
 
     public void Update()
@@ -75,7 +123,7 @@ public class GameManager : MonoBehaviour
                     _playerState = PlayerStates.Waiting;
                     
                     //Start Timer
-                    StartCoroutine(TeacherTimer());
+                    StartCoroutine(_teacherController.TeacherTimer());
                     
                     //UIManager
                     UIManager.Instance.UnLoadUI("startscreen");
@@ -84,7 +132,6 @@ public class GameManager : MonoBehaviour
                 break;
             case(GameStates.RoundInProgress):
                 Debug.Log("RoundInProgress");
-                
                 //End round Condition
                 if (_playerLife <= 0)
                 {
@@ -154,50 +201,12 @@ public class GameManager : MonoBehaviour
                 }
                 break;
         }
+        _noiseController.DecreaseNoiseLevel(_decreaseNoiseLevel/100);
     }
 
     public void DestroyGameManager()
     {
         //Use this function before reload / change scene;
         Destroy(gameObject);
-    }
-    
-    
-    IEnumerator TeacherTimer()
-    {
-        //
-        yield return new WaitForSeconds(1);
-        if (TeacherChangeState(_probabilityTeacherRegard) && _teacherState != TeacherStates.Cooldown)
-        {
-            _teacherState = TeacherStates.Regard;
-            StartCoroutine(TeacherResetTimer());
-        }
-        else
-        {
-            StopCoroutine(TeacherTimer());
-            StartCoroutine(TeacherTimer());
-        }
-    }
-
-    IEnumerator TeacherResetTimer()
-    {
-        //Params : Time teacher stay in Regard state
-        yield return new WaitForSeconds(_timerTeacherStayRegard);
-        _teacherState = TeacherStates.Cooldown;
-        StartCoroutine(TeacherOnCooldown());
-    }
-
-    IEnumerator TeacherOnCooldown()
-    {
-        yield return new WaitForSeconds(teacherCooldown);
-        _teacherState = TeacherStates.Writing;
-        StartCoroutine(TeacherTimer());
-    }
-
-    private bool TeacherChangeState(int probability)
-    {
-        Random random = new Random();
-        int prob = random.Next(probability, 100);
-        return prob == probability+1;
     }
 }

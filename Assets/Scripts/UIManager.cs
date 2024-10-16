@@ -45,19 +45,6 @@ public class UIManager : MonoBehaviour
         }
     }
     
-    public void UpdateHeartsUI(int life)
-    {
-        foreach (GameObject heart in _heartsList)
-        {
-            heart.SetActive(false);
-            if (life > 0)
-            {
-                heart.SetActive(true);
-            }
-            life--;
-        }
-    }
-
     public void LoadUI(string uiType)
     {
         //Params : startscreen || roundscreen || losescreen || endscreen
@@ -95,6 +82,19 @@ public class UIManager : MonoBehaviour
             case("endscreen"):
                 _endScreen.SetActive(false);
                 break;
+        }
+    }
+    
+    public void UpdateHeartsUI(int life)
+    {
+        foreach (GameObject heart in _heartsList)
+        {
+            heart.SetActive(false);
+            if (life > 0)
+            {
+                heart.SetActive(true);
+            }
+            life--;
         }
     }
 }

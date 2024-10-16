@@ -132,6 +132,8 @@ GameObject:
   m_Component:
   - component: {fileID: 85967990}
   - component: {fileID: 85967991}
+  - component: {fileID: 85967992}
+  - component: {fileID: 85967993}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -167,9 +169,46 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerLife: 2
+  _teacherController: {fileID: 85967992}
   _probabilityTeacherRegard: 90
   _timerTeacherStayRegard: 5
   teacherCooldown: 3
+  _firstLevelNoise: 0
+  _secondeLevelNoise: 0
+  _thirdLevelNoise: 0
+  _firstLevelProba: 0
+  _secondeLevelProba: 0
+  _thirdLevelProba: 0
+  _noiseController: {fileID: 85967993}
+  _decreaseNoiseLevel: 1
+  _craftNoise: 0
+  _shootNoise: 0
+  _hitNoise: 0
+  _missNoise: 0
+--- !u!114 &85967992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 85967989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1cb062966ab81b4fbde632b3d6405fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &85967993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 85967989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3861fb1275b5bdb46b6b302e029611d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &280541768
 GameObject:
   m_ObjectHideFlags: 0
