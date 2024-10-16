@@ -1,6 +1,4 @@
-using System.Collections;
 using UnityEngine;
-using Random = System.Random;
 
 
 public class GameManager : MonoBehaviour

@@ -1,7 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -17,6 +16,10 @@ public class UIManager : MonoBehaviour
         
     [Header("Heart")]
     [SerializeField] private List<GameObject> _heartsList;
+
+    [Header("Noise")]
+    [SerializeField] private Slider _noiseSlider;
+    
     
     public void Awake()
     {
@@ -41,6 +44,7 @@ public class UIManager : MonoBehaviour
                 break;
             case(GameStates.RoundInProgress):
                 UpdateHeartsUI(GameManager.Instance.PlayerLife);
+                UpdateNoiseUI(GameManager.Instance.NoiseLevel);
                 break;
         }
     }
@@ -85,7 +89,7 @@ public class UIManager : MonoBehaviour
         }
     }
     
-    public void UpdateHeartsUI(int life)
+    private void UpdateHeartsUI(int life)
     {
         foreach (GameObject heart in _heartsList)
         {
@@ -96,5 +100,10 @@ public class UIManager : MonoBehaviour
             }
             life--;
         }
+    }
+    
+    private void UpdateNoiseUI(float noiseLevel)
+    {
+        _noiseSlider.value = noiseLevel/100;
     }
 }
