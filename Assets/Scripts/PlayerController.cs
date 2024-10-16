@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour
     [Header("Boulette de Papier")]
     public GameObject boulettePrefab;
     public float bouletteSpeed = 50f;
+    public int bouletteNumber = 0;
 
     [Header("Camera")]
     public Camera playerCamera;
@@ -18,6 +20,12 @@ public class PlayerController : MonoBehaviour
 
     [Header("UI")]
     public RectTransform viseurRectTransform; // Le RectTransform de l'Image du viseur
+
+    [Header("Slider")]
+    public Slider timerSlider;
+    public float sliderTimer;
+    public bool cantStop = false;
+    public bool isReloading = false;
 
     private bool isAiming = false;
 
@@ -27,6 +35,10 @@ public class PlayerController : MonoBehaviour
         {
             viseurRectTransform.gameObject.SetActive(false);
         }
+        timerSlider.maxValue = sliderTimer;
+        timerSlider.value = 0;
+        cantStop = false;
+        StartTimer();
     }
 
     void Update()
@@ -34,10 +46,46 @@ public class PlayerController : MonoBehaviour
         HandleAiming();
         HandleShooting();
         HandleRotation();
+        reload();
 
         if (isAiming)
         {
             UpdateViseurPosition();
+        }
+    }
+
+    public void StartTimer()
+    {
+        StartCoroutine(StartTheTimerTicker());
+    }
+
+    IEnumerator StartTheTimerTicker()
+    {
+        while (timerSlider.value < sliderTimer)
+        {
+            if (cantStop == true)
+            {
+                timerSlider.value += Time.deltaTime;
+
+                if (timerSlider.value >= sliderTimer - 0.1)
+                {
+                    bouletteNumber++;
+                    timerSlider.value = 0;
+                    cantStop = false;
+                }
+            }
+            yield return null;
+        }
+
+
+    }
+
+    void reload()
+    {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            isReloading = true;
+            cantStop = true;
         }
     }
 
@@ -83,7 +131,7 @@ public class PlayerController : MonoBehaviour
         if (isAiming && Input.GetMouseButtonDown(0))
         {
             // Tirer une boulette de papier
-            if (boulettePrefab != null && sarbacaneSpawnPoint != null)
+            if (boulettePrefab != null && sarbacaneSpawnPoint != null && bouletteNumber > 0)
             {
                 Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit hit;
@@ -104,10 +152,11 @@ public class PlayerController : MonoBehaviour
                 Rigidbody rb = boulette.GetComponent<Rigidbody>();
 
                 rb.velocity = direction * bouletteSpeed;
+                bouletteNumber--;
             }
             else
             {
-                Debug.LogError("il manque un prefab IDIOT");
+                Debug.Log("il te manque des boulette");
             }
         }
     }
