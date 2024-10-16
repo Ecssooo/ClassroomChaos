@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,33 +16,65 @@ public class PlayerController : MonoBehaviour
     public Camera playerCamera;
     public float rotationSpeed = 100f;
 
+    [Header("UI")]
+    public RectTransform viseurRectTransform; // Le RectTransform de l'Image du viseur
+
     private bool isAiming = false;
+
+    void Start()
+    {
+        if (viseurRectTransform != null)
+        {
+            viseurRectTransform.gameObject.SetActive(false);
+        }
+    }
 
     void Update()
     {
         HandleAiming();
         HandleShooting();
         HandleRotation();
+
+        if (isAiming)
+        {
+            UpdateViseurPosition();
+        }
     }
 
     void HandleAiming()
     {
         if (Input.GetMouseButtonDown(1))
         {
-            // Activer la sarbacane et le viseur
-            isAiming = true;
-            GameManager.Instance.PlayerState = PlayerStates.Shooting;
-            sarbacaneInstance = Instantiate(sarbacanePrefab, sarbacaneSpawnPoint.position, sarbacaneSpawnPoint.rotation, sarbacaneSpawnPoint);
-            // Afficher le viseur (ui, comme ça il reste au centre de l'écran)
+            if (sarbacanePrefab != null && sarbacaneSpawnPoint != null)
+            {
+                isAiming = true;
+                sarbacaneInstance = Instantiate(sarbacanePrefab, sarbacaneSpawnPoint.position, sarbacaneSpawnPoint.rotation, sarbacaneSpawnPoint);
+
+                // Afficher le viseur
+                if (viseurRectTransform != null)
+                {
+                    viseurRectTransform.gameObject.SetActive(true);
+                }
+            }
+            else
+            {
+                Debug.LogError("il manque un prefab ABRUTI");
+            }
         }
 
         if (Input.GetMouseButtonUp(1))
         {
-            // Désactiver la sarbacane et le viseur
             isAiming = false;
-            Destroy(sarbacaneInstance);
-            GameManager.Instance.PlayerState = PlayerStates.Waiting;
+            if (sarbacaneInstance != null)
+            {
+                Destroy(sarbacaneInstance);
+            }
+
             // Masquer le viseur
+            if (viseurRectTransform != null)
+            {
+                viseurRectTransform.gameObject.SetActive(false);
+            }
         }
     }
 
@@ -50,35 +83,78 @@ public class PlayerController : MonoBehaviour
         if (isAiming && Input.GetMouseButtonDown(0))
         {
             // Tirer une boulette de papier
-            GameObject boulette = Instantiate(boulettePrefab, sarbacaneSpawnPoint.position, sarbacaneSpawnPoint.rotation);
-            Rigidbody rb = boulette.GetComponent<Rigidbody>();
-            rb.velocity = playerCamera.transform.forward * bouletteSpeed;
+            if (boulettePrefab != null && sarbacaneSpawnPoint != null)
+            {
+                Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
+                Vector3 targetPoint;
+
+                if (Physics.Raycast(ray, out hit))
+                {
+                    targetPoint = hit.point;
+                }
+                else
+                {
+                    targetPoint = ray.GetPoint(1000); // vise loin direction souri
+                }
+
+                Vector3 direction = (targetPoint - sarbacaneSpawnPoint.position).normalized;
+
+                GameObject boulette = Instantiate(boulettePrefab, sarbacaneSpawnPoint.position, Quaternion.identity);
+                Rigidbody rb = boulette.GetComponent<Rigidbody>();
+
+                rb.velocity = direction * bouletteSpeed;
+            }
+            else
+            {
+                Debug.LogError("il manque un prefab IDIOT");
+            }
         }
     }
 
     void HandleRotation()
     {
-        Vector3 mousePosition = Input.mousePosition;
-        float screenWidth = Screen.width;
-
-        if (mousePosition.x <= 0)
-            mousePosition.x = 0;
-        if (mousePosition.x >= screenWidth)
-            mousePosition.x = screenWidth;
-
-        float rotationDirection = 0f;
-
-        if (mousePosition.x < screenWidth * 0.1f)
+        if (!isAiming)
         {
-            // Tourner à gauche
-            rotationDirection = -1f;
-        }
-        else if (mousePosition.x > screenWidth * 0.9f)
-        {
-            // Tourner à droite
-            rotationDirection = 1f;
-        }
+            Vector3 mousePosition = Input.mousePosition;
+            float screenWidth = Screen.width;
 
-        transform.Rotate(0f, rotationDirection * rotationSpeed * Time.deltaTime, 0f);
+            if (mousePosition.x <= 0)
+                mousePosition.x = 0;
+            if (mousePosition.x >= screenWidth)
+                mousePosition.x = screenWidth;
+
+            float rotationDirection = 0f;
+
+            if (mousePosition.x < screenWidth * 0.1f)
+            {
+                // Tourner à gauche
+                rotationDirection = -1f;
+            }
+            else if (mousePosition.x > screenWidth * 0.9f)
+            {
+                // Tourner à droite
+                rotationDirection = 1f;
+            }
+
+            transform.Rotate(0f, rotationDirection * rotationSpeed * Time.deltaTime, 0f);
+        }
+    }
+
+    void UpdateViseurPosition()
+    {
+        if (viseurRectTransform != null)
+        {
+            // coordonée souri = coordonée canva ui (c'est chaud)
+            Vector2 mousePosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                viseurRectTransform.parent as RectTransform,
+                Input.mousePosition,
+                playerCamera,
+                out mousePosition);
+
+            // bouger le viseur
+            viseurRectTransform.localPosition = mousePosition;
+        }
     }
 }
