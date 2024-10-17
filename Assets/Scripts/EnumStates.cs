@@ -22,5 +22,6 @@ public enum TeacherStates
 {
     WaitingScreen,
     Writing,
-    Regard
+    Regard,
+    Cooldown
 }

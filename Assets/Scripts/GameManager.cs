@@ -1,18 +1,10 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using Random = System.Random;
 
 
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
-    public static GameManager Instance
-    {
-        get { return _instance; }
-    }
+    public static GameManager Instance { get { return _instance; } }
 
     [Header("GameStates")] 
     private GameStates _gameState;
@@ -23,16 +15,63 @@ public class GameManager : MonoBehaviour
 
     private TeacherStates _teacherState;
     public TeacherStates TeacherState { get { return _teacherState; } set { _teacherState = value; } }
-
-    [Header("Timer")]
-    [SerializeField] private int _maxTeacherTimer;
-    [SerializeField] private int _minTeacherTimer;
-    [SerializeField] private float _timerTeacherStayRegard;
-    private float _currentTeacherTimer;
-
-    [Header("Player")] 
+    
+    [Header("Player Parameters")] 
     [SerializeField] private int _playerLife;
     public int PlayerLife { get { return _playerLife; } set { _playerLife = value; } }
+
+
+    [Header("Teacher Parameters")] 
+    [SerializeField] private TeacherController _teacherController;
+    [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
+    [SerializeField] private float _timerTeacherStayRegard;
+    [SerializeField] private float teacherCooldown;
+    
+    private int _currentProbaTeacherRegard;
+    public int CurrentProbaTeacherRegard { get { return _currentProbaTeacherRegard; } set { _currentProbaTeacherRegard = value; } }
+    public int ProbabilityTeacherRegard { get { return _probabilityTeacherRegard; } }
+    
+    public float TimerTeacherStayRegard { get { return _timerTeacherStayRegard; } }
+    
+    public float TeacherCooldown { get { return teacherCooldown; } }
+
+    #region Noise Level Probability
+    [Header("Probability by Noise")]
+    [SerializeField] private int _firstLevelNoise;
+    [SerializeField] private int _secondeLevelNoise;
+    [SerializeField] private int _thirdLevelNoise;
+    [SerializeField] private int _firstLevelProba;
+    [SerializeField] private int _secondeLevelProba;
+    [SerializeField] private int _thirdLevelProba;
+    
+    #region Accesseurs
+    
+    public int FirstLevelNoise { get { return _firstLevelNoise; } }
+    public int SecondeLevelNoise { get { return _secondeLevelNoise; } }
+    public int ThirdLevelNoise { get { return _thirdLevelNoise; } }
+    public int FirstLevelProba { get { return _firstLevelProba; } }
+    public int SecodeLevelProba { get { return _secondeLevelProba; } }
+    public int ThirdLevelProba { get { return _thirdLevelProba; } }
+
+    #endregion
+    #endregion
+    
+    
+    
+    [Header("Noise Controller")]
+    [SerializeField] private NoiseController _noiseController;
+    private float _noiseLevel;
+    [SerializeField] private float _decreaseNoiseLevel;
+    [SerializeField] private float _craftNoise;
+    [SerializeField] private float _shootNoise;
+    [SerializeField] private float _hitNoise;
+    [SerializeField] private float _missNoise;
+    public NoiseController NoiseController { get { return _noiseController; } }
+    public float NoiseLevel { get { return _noiseLevel; } set { _noiseLevel = value; } }
+    public float CraftNoise { get { return _craftNoise; } }
+    public float ShootNoise { get { return _shootNoise; } }
+    public float HitNoise { get { return _hitNoise; } }
+    public float MissNoise { get { return _missNoise; } }
     
     
     
@@ -53,9 +92,13 @@ public class GameManager : MonoBehaviour
 
     public void Start()
     {
+        //Init States
         _gameState = GameStates.StartScreen;
         _playerState = PlayerStates.WaitingScreen;
         _teacherState = TeacherStates.WaitingScreen;
+        
+        //Init Variables
+        _currentProbaTeacherRegard = _probabilityTeacherRegard;
     }
 
     public void Update()
@@ -72,23 +115,45 @@ public class GameManager : MonoBehaviour
                 Debug.Log("StartScreen");
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Init State
                     _gameState = GameStates.RoundInProgress;
                     _teacherState = TeacherStates.Writing;
                     _playerState = PlayerStates.Waiting;
-                    StartCoroutine(TeacherTimer(GenerateFloat(_minTeacherTimer, _maxTeacherTimer)));
                     
+                    //Start Timer
+                    StartCoroutine(_teacherController.TeacherTimer());
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("startscreen");
+                    UIManager.Instance.LoadUI("roundscreen");
                 }
                 break;
             case(GameStates.RoundInProgress):
                 Debug.Log("RoundInProgress");
+                //End round Condition
                 if (_playerLife <= 0)
+                {
+                    //Change State
                     _gameState = GameStates.LoseScreen;
+                    _teacherState = TeacherStates.WaitingScreen;
+                    _playerState = PlayerStates.WaitingScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("roundscreen");
+                    UIManager.Instance.LoadUI("losescreen");
+                }
+                //Round Loop
                 RoundLoop();
                 break;
             case(GameStates.LoseScreen):
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Change State
                     _gameState = GameStates.StartScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("losescreen");
+                    UIManager.Instance.LoadUI("startscreen");
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -101,7 +166,12 @@ public class GameManager : MonoBehaviour
                 Debug.Log("EndScreen");
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
+                    //Change State
                     _gameState = GameStates.StartScreen;
+                    
+                    //UIManager
+                    UIManager.Instance.UnLoadUI("endscreen");
+                    UIManager.Instance.LoadUI("startscreen");
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -129,36 +199,12 @@ public class GameManager : MonoBehaviour
                 }
                 break;
         }
+        _noiseController.DecreaseNoiseLevel(_decreaseNoiseLevel/100);
     }
 
     public void DestroyGameManager()
     {
         //Use this function before reload / change scene;
         Destroy(gameObject);
-    }
-    
-    
-    IEnumerator TeacherTimer(float timer)
-    {
-        //Params : Time teacher stay in Writing state
-        yield return new WaitForSeconds(timer);
-        _teacherState = TeacherStates.Regard;
-        StartCoroutine(TeacherResetTimer(_timerTeacherStayRegard));
-    }
-
-    IEnumerator TeacherResetTimer(float timer)
-    {
-        //Params : Time teacher stay in Regard state
-        yield return new WaitForSeconds(timer);
-        _teacherState = TeacherStates.Writing;
-        StartCoroutine(TeacherTimer(GenerateFloat(_minTeacherTimer, _maxTeacherTimer)));
-    }
-
-    private float GenerateFloat(int min,int max)
-    {
-        Random random = new Random();
-        int unit = random.Next(min, max);
-        float dec = random.Next(0, 99) * 0.01f;
-        return unit + dec;
     }
 }
