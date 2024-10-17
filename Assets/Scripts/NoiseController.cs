@@ -18,8 +18,7 @@ public class NoiseController : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(GameManager.Instance.NoiseLevel);
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.G) && GameManager.Instance.GameState == GameStates.RoundInProgress)
         {
             IncreaseNoiseLevel(50);
         }
