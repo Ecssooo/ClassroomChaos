@@ -1,16 +1,25 @@
+using System;
 using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 using Random = System.Random;
 
 public class TeacherController : MonoBehaviour
 {
+    private Rigidbody rb;
+
+    private void Start()
+    {
+        rb = GameManager.Instance.TeacherRigidbody;
+    }
+
     public IEnumerator TeacherTimer()
     {
         //
         yield return new WaitForSeconds(1);
         if (TeacherChangeState(GameManager.Instance.CurrentProbaTeacherRegard) && GameManager.Instance.TeacherState != TeacherStates.Cooldown)
         {
-            GameManager.Instance.TeacherState = TeacherStates.Regard;
+            StartCoroutine(RotateTeacherInRegard());
             StartCoroutine(TeacherResetTimer());
         }
         else
@@ -22,7 +31,6 @@ public class TeacherController : MonoBehaviour
     
     public IEnumerator TeacherResetTimer()
     {
-        //Params : Time teacher stay in Regard state
         yield return new WaitForSeconds(GameManager.Instance.TimerTeacherStayRegard);
         GameManager.Instance.TeacherState = TeacherStates.Cooldown;
         StartCoroutine(TeacherOnCooldown());
@@ -30,7 +38,7 @@ public class TeacherController : MonoBehaviour
 
     public IEnumerator TeacherOnCooldown()
     {
-        
+        StartCoroutine(RotateTeacherInCooldown());
         yield return new WaitForSeconds(GameManager.Instance.TeacherCooldown);
         GameManager.Instance.TeacherState = TeacherStates.Writing;
         StartCoroutine(TeacherTimer());
@@ -55,8 +63,25 @@ public class TeacherController : MonoBehaviour
     
     public bool TeacherChangeState(int probability)
     {
+        //Calcul teacher rotate probability
         Random random = new Random();
         int prob = random.Next(probability, 100);
         return prob == probability+1;
+    }
+
+    public IEnumerator RotateTeacherInRegard()
+    {
+        //Rotate Teacher in front of the classroom
+        rb.DORotate(new Vector3(0, 180, 0), 1f);
+        yield return new WaitForSeconds(1);
+        GameManager.Instance.TeacherState = TeacherStates.Regard;
+    }
+
+    public IEnumerator RotateTeacherInCooldown()
+    {
+        //Rotate Teacher in front of the board
+        rb.DORotate(new Vector3(0, 0, 0), 1f);
+        yield return new WaitForSeconds(1);
+        GameManager.Instance.TeacherState = TeacherStates.Cooldown;
     }
 }
