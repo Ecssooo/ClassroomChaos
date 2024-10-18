@@ -112,4 +112,10 @@ public class UIManager : MonoBehaviour
     {
         _noiseSlider.value = noiseLevel/100;
     }
+    
+    public void DestroyUIManager()
+    {
+        //Use this function before reload / change scene;
+        Destroy(gameObject);
+    }
 }

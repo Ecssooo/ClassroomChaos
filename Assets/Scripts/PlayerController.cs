@@ -90,6 +90,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.GameState == GameStates.StartScreen)
+            ammoCount = 3;
+        
         HandleAiming();
         HandleShooting();
         HandleRotation();
@@ -361,7 +364,6 @@ public class PlayerController : MonoBehaviour
                 canShootTeacher = true;
                 UpdateAmmoText();
                 Debug.Log("ATOMISE LA PROF");
-
                 if (teacher != null)
                 {
                     teacher.ActivateTeacher();

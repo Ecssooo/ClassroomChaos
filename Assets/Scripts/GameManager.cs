@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     #region Teacher parameters
     [Header("Teacher Parameters")] 
     [SerializeField] private Rigidbody _teacherRigidbody;
+    public Teacher _teacher;
     [SerializeField] private TeacherController _teacherController;
     [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
     [SerializeField] private float _timerTeacherStayRegard;
@@ -154,12 +155,9 @@ public class GameManager : MonoBehaviour
             case(GameStates.LoseScreen):
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    //Change State
-                    _gameState = GameStates.StartScreen;
-                    
-                    //UIManager
-                    UIManager.Instance.UnLoadUI("losescreen");
-                    UIManager.Instance.LoadUI("startscreen");
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                    DestroyGameManager();
+                    UIManager.Instance.DestroyUIManager();
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -172,12 +170,9 @@ public class GameManager : MonoBehaviour
                 Debug.Log("EndScreen");
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
-                    //Change State
-                    _gameState = GameStates.StartScreen;
-                    
-                    //UIManager
-                    UIManager.Instance.UnLoadUI("endscreen");
-                    UIManager.Instance.LoadUI("startscreen");
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                    DestroyGameManager();
+                    UIManager.Instance.DestroyUIManager();
                 }
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -200,7 +195,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log("Teacher Regard");
                 if ((_playerState == PlayerStates.Shooting ||
                     _playerState == PlayerStates.Reloading ||
-                    _playerState == PlayerStates.Crafting) && !_alreadyLose)
+                    _playerState == PlayerStates.Crafting) && !_alreadyLose && !_teacher.canBeShot)
                 {
                     _playerLife--;
                     _alreadyLose = true;

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 
@@ -9,7 +10,7 @@ public class Teacher : MonoBehaviour
     [SerializeField] private float accumulatedValue = 0f;
     [SerializeField] private AudioClip hitSound;
 
-    private bool canBeShot = false;
+    public bool canBeShot = false;
     private bool isMoving = false;
     private Rigidbody rb;
     private AudioSource audioSource;
@@ -33,6 +34,16 @@ public class Teacher : MonoBehaviour
         }
 
         canBeShot = false;
+    }
+
+    private void Update()
+    {
+        if (GameManager.Instance.GameState == GameStates.StartScreen)
+        {
+            canBeShot = false;
+            accumulatedValue = 0;
+            isMoving = false;
+        }
     }
 
     public void ActivateTeacher()
@@ -67,6 +78,8 @@ public class Teacher : MonoBehaviour
 
             rb.velocity = new Vector3(0f, accumulatedValue / 2, accumulatedValue / 2);
             GameManager.Instance.GameState = GameStates.End;
+            UIManager.Instance.UnLoadUI("roundscreen");
+            UIManager.Instance.LoadUI("endscreen");
             Debug.Log("Le professeur est propuls� avec la force accumul�e !");
         }
     }
