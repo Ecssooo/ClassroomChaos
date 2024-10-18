@@ -9,7 +9,7 @@ public class Student : MonoBehaviour
         if (!IsKnockedOut)
         {
             IsKnockedOut = true;
-            Debug.Log("L'élève est assommé !");
+            Debug.Log("L'Ã©lÃ¨ve est assommÃ© !");
 
             GameManager.Instance.NoiseController.PlayRandomHitSound();
 

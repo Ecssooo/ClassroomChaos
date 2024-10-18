@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
     [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
     [SerializeField] private float _timerTeacherStayRegard;
     [SerializeField] private float teacherCooldown;
+    private bool _alreadyLose;
     
     #region Accesseurs    
     private int _currentProbaTeacherRegard;
@@ -193,14 +194,16 @@ public class GameManager : MonoBehaviour
         {
             case(TeacherStates.Writing):
                 Debug.Log("Teacher Writing");
+                _alreadyLose = false;
                 break;
             case(TeacherStates.Regard):
                 Debug.Log("Teacher Regard");
-                if (_playerState == PlayerStates.Shooting ||
+                if ((_playerState == PlayerStates.Shooting ||
                     _playerState == PlayerStates.Reloading ||
-                    _playerState == PlayerStates.Crafting)
+                    _playerState == PlayerStates.Crafting) && !_alreadyLose)
                 {
                     _playerLife--;
+                    _alreadyLose = true;
                 }
                 break;
         }

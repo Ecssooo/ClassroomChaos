@@ -3,7 +3,7 @@ using System.Collections;
 
 public class Teacher : MonoBehaviour
 {
-    [Header("Paramètres du Professeur")]
+    [Header("Paramï¿½tres du Professeur")]
     [SerializeField] private float timeToShootTeacher = 10f;
     [SerializeField] private float valuePerHit = 5f;
     [SerializeField] private float accumulatedValue = 0f;
@@ -37,7 +37,7 @@ public class Teacher : MonoBehaviour
 
     public void ActivateTeacher()
     {
-        // Appelé lorsque tous les élèves sont assommés
+        // Appelï¿½ lorsque tous les ï¿½lï¿½ves sont assommï¿½s
         canBeShot = true;
         Debug.Log("Vous pouvez maintenant tirer sur le professeur !");
 
@@ -66,8 +66,8 @@ public class Teacher : MonoBehaviour
             rb.isKinematic = false;
 
             rb.velocity = new Vector3(0f, accumulatedValue / 2, accumulatedValue / 2);
-
-            Debug.Log("Le professeur est propulsé avec la force accumulée !");
+            GameManager.Instance.GameState = GameStates.End;
+            Debug.Log("Le professeur est propulsï¿½ avec la force accumulï¿½e !");
         }
     }
 
@@ -76,7 +76,7 @@ public class Teacher : MonoBehaviour
         if (canBeShot)
         {
             accumulatedValue += valuePerHit;
-            Debug.Log("Professeur touché ! Valeur accumulée : " + accumulatedValue);
+            Debug.Log("Professeur touchï¿½ ! Valeur accumulï¿½e : " + accumulatedValue);
 
             if (hitSound != null)
             {
