@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 8000702878580078078}
   - component: {fileID: 737892220872452558}
   - component: {fileID: -1705480036206502775}
-  - component: {fileID: -8380575834849133550}
+  - component: {fileID: 4596379679332330165}
   m_Layer: 0
-  m_Name: Boulette
+  m_Name: Boulette 1
   m_TagString: Projectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -134,7 +134,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-8380575834849133550
+--- !u!114 &4596379679332330165
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
