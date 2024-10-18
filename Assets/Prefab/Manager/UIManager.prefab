@@ -44,10 +44,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7638a5c1549ac624aa85ad52b75906e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _startScreen: {fileID: 0}
-  _roundScreen: {fileID: 0}
-  _loseScreen: {fileID: 0}
-  _endScreen: {fileID: 0}
+  _startScreen: {fileID: 7604358965075720264, guid: aa25c170ef2447947a6bc8a9066459aa, type: 3}
+  _roundScreen: {fileID: 515072747657830485, guid: 4cd688cdbc44ec44daa2d5189f625f2b, type: 3}
+  _loseScreen: {fileID: 5587117464365444970, guid: 683e2746e4709e541a72a8a91f0b75d7, type: 3}
+  _endScreen: {fileID: 7910169377474771994, guid: 8bb71a704a12abf429dc32d7976c944e, type: 3}
   _heartsList:
   - {fileID: 0}
   - {fileID: 0}

@@ -3,6 +3,7 @@ using UnityEngine;
 public class Student : MonoBehaviour
 {
     public bool IsKnockedOut { get; private set; } = false;
+    public Animator anim;
 
     public void GetHit(GameObject projectile)
     {
@@ -10,6 +11,8 @@ public class Student : MonoBehaviour
         {
             IsKnockedOut = true;
             Debug.Log("L'élève est assommé !");
+
+            anim.SetTrigger("isDead");
 
             GameManager.Instance.NoiseController.PlayRandomHitSound();
 
