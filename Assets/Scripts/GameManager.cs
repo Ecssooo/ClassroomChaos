@@ -20,20 +20,23 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int _playerLife;
     public int PlayerLife { get { return _playerLife; } set { _playerLife = value; } }
 
-
+    #region Teacher parameters
     [Header("Teacher Parameters")] 
+    [SerializeField] private Rigidbody _teacherRigidbody;
     [SerializeField] private TeacherController _teacherController;
     [SerializeField, Range(0,100)] private int _probabilityTeacherRegard;
     [SerializeField] private float _timerTeacherStayRegard;
     [SerializeField] private float teacherCooldown;
     
+    #region Accesseurs    
     private int _currentProbaTeacherRegard;
     public int CurrentProbaTeacherRegard { get { return _currentProbaTeacherRegard; } set { _currentProbaTeacherRegard = value; } }
     public int ProbabilityTeacherRegard { get { return _probabilityTeacherRegard; } }
-    
     public float TimerTeacherStayRegard { get { return _timerTeacherStayRegard; } }
-    
     public float TeacherCooldown { get { return teacherCooldown; } }
+    public Rigidbody TeacherRigidbody { get { return _teacherRigidbody; } }
+    #endregion
+    #endregion
 
     #region Noise Level Probability
     [Header("Probability by Noise")]
@@ -56,8 +59,7 @@ public class GameManager : MonoBehaviour
     #endregion
     #endregion
     
-    
-    
+    #region NoiseController
     [Header("Noise Controller")]
     [SerializeField] private NoiseController _noiseController;
     private float _noiseLevel;
@@ -66,6 +68,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float _shootNoise;
     [SerializeField] private float _hitNoise;
     [SerializeField] private float _missNoise;
+    
+    #region Accesseurs
     public NoiseController NoiseController { get { return _noiseController; } }
     public float NoiseLevel { get { return _noiseLevel; } set { _noiseLevel = value; } }
     public float CraftNoise { get { return _craftNoise; } }
@@ -73,7 +77,8 @@ public class GameManager : MonoBehaviour
     public float HitNoise { get { return _hitNoise; } }
     public float MissNoise { get { return _missNoise; } }
     
-    
+    #endregion
+    #endregion
     
     public void Awake()
     {
@@ -200,6 +205,7 @@ public class GameManager : MonoBehaviour
                 break;
         }
         _noiseController.DecreaseNoiseLevel(_decreaseNoiseLevel/100);
+        _teacherController.ModifyTeacherProbaByNoise();
     }
 
     public void DestroyGameManager()

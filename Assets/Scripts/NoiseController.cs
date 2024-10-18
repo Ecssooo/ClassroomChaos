@@ -50,5 +50,8 @@ public class NoiseController : MonoBehaviour
     {
         // Optionnel : Afficher le niveau de bruit pour le débogage
         Debug.Log(GameManager.Instance.NoiseLevel);
+        {
+            IncreaseNoiseLevel(50);
+        }
     }
 }
