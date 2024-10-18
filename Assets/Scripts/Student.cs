@@ -2,25 +2,28 @@ using UnityEngine;
 
 public class Student : MonoBehaviour
 {
-    private bool isKnockedOut = false;
+    public bool IsKnockedOut { get; private set; } = false;
 
-    public void GetHit()
+    public void GetHit(GameObject projectile)
     {
-        if (!isKnockedOut)
+        if (!IsKnockedOut)
         {
-            isKnockedOut = true;
-            Debug.Log("C'est une dinguerie de faire ça !!!");
-            // Jouer une animation plus tard.
+            IsKnockedOut = true;
+            Debug.Log("L'élève est assommé !");
 
+            GameManager.Instance.NoiseController.PlayRandomHitSound();
+
+            GameManager.Instance.NoiseController.IncreaseNoiseLevel(GameManager.Instance.HitNoise);
+
+            Destroy(projectile);
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Boulette"))
+        if (collision.gameObject.CompareTag("Projectile"))
         {
-            GetHit();
-            Destroy(collision.gameObject); // la boulette disparaitra a l'aide d'un tour de magie
+            GetHit(collision.gameObject);
         }
     }
 }

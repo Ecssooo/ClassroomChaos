@@ -1,33 +1,65 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+
+[System.Serializable]
+public class ShootableObject
+{
+    public GameObject prefab;
+    [Range(0f, 1f)]
+    public float probability;
+}
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Sarbacane")]
-    public GameObject sarbacanePrefab;
-    public Transform sarbacaneSpawnPoint;
-    private GameObject sarbacaneInstance;
+    #region Variables
 
-    [Header("Boulette de Papier")]
-    public GameObject boulettePrefab;
-    public float bouletteSpeed = 50f;
-    public int bouletteNumber = 0;
+    [Header("Objets à lancer")]
+    [SerializeField]
+    private List<ShootableObject> shootableObjects;
+
+    [Header("Paramètres de tir")]
+    public float objectSpeed = 50f;
+    private int ammoCount = 0;
 
     [Header("Camera")]
     public Camera playerCamera;
     public float rotationSpeed = 100f;
 
+    [Header("Limites de rotation")]
+    public float minYRotation = -60f;
+    public float maxYRotation = 60f;
+    private float currentYRotation = 0f;
+
     [Header("UI")]
-    public RectTransform viseurRectTransform; // Le RectTransform de l'Image du viseur
+    public RectTransform viseurRectTransform;
+    public TextMeshProUGUI ammoText;
 
     [Header("Slider")]
     public Slider timerSlider;
     public float sliderTimer;
-    public bool cantStop = false;
-    public bool isReloading = false;
 
+    [Header("Sons")]
+    public AudioClip reloadSound;
+    private AudioSource audioSource;
+
+    private bool isReloading = false;
     private bool isAiming = false;
+
+    private bool canShootTeacher = false;
+
+    public bool CanShootTeacher
+    {
+        get { return canShootTeacher; }
+    }
+
+    private Teacher teacher;
+
+    #endregion
+
+    #region Méthodes Unity
 
     void Start()
     {
@@ -35,10 +67,25 @@ public class PlayerController : MonoBehaviour
         {
             viseurRectTransform.gameObject.SetActive(false);
         }
-        timerSlider.maxValue = sliderTimer;
-        timerSlider.value = 0;
-        cantStop = false;
-        StartTimer();
+
+        if (timerSlider != null)
+        {
+            timerSlider.maxValue = sliderTimer;
+            timerSlider.value = 0;
+            timerSlider.gameObject.SetActive(false);
+        }
+
+        teacher = FindObjectOfType<Teacher>();
+
+        GameManager.Instance.PlayerState = PlayerStates.Waiting;
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        UpdateAmmoText();
     }
 
     void Update()
@@ -46,120 +93,222 @@ public class PlayerController : MonoBehaviour
         HandleAiming();
         HandleShooting();
         HandleRotation();
-        reload();
+        HandleReload();
+        CheckStudentsStatus();
 
         if (isAiming)
         {
             UpdateViseurPosition();
         }
-    }
 
-    public void StartTimer()
-    {
-        StartCoroutine(StartTheTimerTicker());
-    }
-
-    IEnumerator StartTheTimerTicker()
-    {
-        while (timerSlider.value < sliderTimer)
+        if (!isAiming && !isReloading && GameManager.Instance.PlayerState != PlayerStates.Waiting)
         {
-            if (cantStop == true)
-            {
-                timerSlider.value += Time.deltaTime;
-
-                if (timerSlider.value >= sliderTimer - 0.1)
-                {
-                    bouletteNumber++;
-                    timerSlider.value = 0;
-                    cantStop = false;
-                }
-            }
-            yield return null;
+            GameManager.Instance.PlayerState = PlayerStates.Waiting;
         }
-
-
     }
 
-    void reload()
+    #endregion
+
+    #region Gestion du Rechargement
+
+    void HandleReload()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && !isReloading && !isAiming)
         {
             isReloading = true;
-            cantStop = true;
+            GameManager.Instance.PlayerState = PlayerStates.Reloading;
+
+            if (reloadSound != null)
+            {
+                audioSource.clip = reloadSound;
+                audioSource.loop = true;
+                audioSource.Play();
+            }
+
+            if (timerSlider != null)
+            {
+                timerSlider.gameObject.SetActive(true);
+                timerSlider.value = 0;
+            }
+            StartCoroutine(StartReloadingTimer());
         }
     }
+
+    IEnumerator StartReloadingTimer()
+    {
+        while (isReloading)
+        {
+            if (timerSlider != null)
+            {
+                timerSlider.value += Time.deltaTime;
+            }
+
+            if (timerSlider != null && timerSlider.value >= sliderTimer)
+            {
+                FinishReloading();
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    void FinishReloading()
+    {
+        isReloading = false;
+        ammoCount++;
+        UpdateAmmoText();
+
+        if (audioSource.isPlaying)
+        {
+            audioSource.Stop();
+            audioSource.loop = false;
+        }
+
+        if (timerSlider != null)
+        {
+            timerSlider.value = 0;
+            timerSlider.gameObject.SetActive(false);
+        }
+        GameManager.Instance.PlayerState = PlayerStates.Waiting;
+    }
+
+    #endregion
+
+    #region Gestion de la Visée
 
     void HandleAiming()
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(1) && !isReloading)
         {
-            if (sarbacanePrefab != null && sarbacaneSpawnPoint != null)
-            {
-                isAiming = true;
-                sarbacaneInstance = Instantiate(sarbacanePrefab, sarbacaneSpawnPoint.position, sarbacaneSpawnPoint.rotation, sarbacaneSpawnPoint);
+            isAiming = true;
 
-                // Afficher le viseur
-                if (viseurRectTransform != null)
-                {
-                    viseurRectTransform.gameObject.SetActive(true);
-                }
-            }
-            else
+            if (viseurRectTransform != null)
             {
-                Debug.LogError("il manque un prefab ABRUTI");
+                viseurRectTransform.gameObject.SetActive(true);
             }
+
+            GameManager.Instance.PlayerState = PlayerStates.Shooting;
         }
 
         if (Input.GetMouseButtonUp(1))
         {
             isAiming = false;
-            if (sarbacaneInstance != null)
-            {
-                Destroy(sarbacaneInstance);
-            }
 
-            // Masquer le viseur
             if (viseurRectTransform != null)
             {
                 viseurRectTransform.gameObject.SetActive(false);
             }
+
+            if (GameManager.Instance.PlayerState == PlayerStates.Shooting)
+            {
+                GameManager.Instance.PlayerState = PlayerStates.Waiting;
+            }
         }
     }
+
+    void UpdateViseurPosition()
+    {
+        if (viseurRectTransform != null)
+        {
+            Vector2 mousePosition;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                viseurRectTransform.parent as RectTransform,
+                Input.mousePosition,
+                playerCamera,
+                out mousePosition);
+
+            viseurRectTransform.localPosition = mousePosition;
+        }
+    }
+
+    #endregion
+
+    #region Gestion du Tir
 
     void HandleShooting()
     {
         if (isAiming && Input.GetMouseButtonDown(0))
         {
-            // Tirer une boulette de papier
-            if (boulettePrefab != null && sarbacaneSpawnPoint != null && bouletteNumber > 0)
+            if (shootableObjects != null && shootableObjects.Count > 0)
             {
-                Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                Vector3 targetPoint;
-
-                if (Physics.Raycast(ray, out hit))
+                if (!canShootTeacher && ammoCount <= 0)
                 {
-                    targetPoint = hit.point;
+                    Debug.Log("Vous n'avez pas de munitions ! Rechargez pour en obtenir.");
+                    return;
+                }
+
+                GameObject selectedPrefab = SelectRandomObject();
+
+                if (selectedPrefab != null)
+                {
+                    Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit hit;
+                    Vector3 targetPoint;
+
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        targetPoint = hit.point;
+                    }
+                    else
+                    {
+                        targetPoint = ray.GetPoint(1000);
+                    }
+
+                    Vector3 direction = (targetPoint - playerCamera.transform.position).normalized;
+
+                    GameObject projectile = Instantiate(selectedPrefab, playerCamera.transform.position, Quaternion.identity);
+                    Rigidbody rb = projectile.GetComponent<Rigidbody>();
+
+                    rb.velocity = direction * objectSpeed;
+
+                    if (!canShootTeacher)
+                    {
+                        ammoCount--;
+                        UpdateAmmoText();
+                    }
+
+                    Debug.Log("Tir effectué !");
                 }
                 else
                 {
-                    targetPoint = ray.GetPoint(1000); // vise loin direction souri
+                    Debug.LogError("Aucun objet sélectionné pour le tir.");
                 }
-
-                Vector3 direction = (targetPoint - sarbacaneSpawnPoint.position).normalized;
-
-                GameObject boulette = Instantiate(boulettePrefab, sarbacaneSpawnPoint.position, Quaternion.identity);
-                Rigidbody rb = boulette.GetComponent<Rigidbody>();
-
-                rb.velocity = direction * bouletteSpeed;
-                bouletteNumber--;
             }
             else
             {
-                Debug.Log("il te manque des boulette");
+                Debug.Log("Aucun objet à lancer.");
             }
         }
     }
+
+    GameObject SelectRandomObject()
+    {
+        float totalProbability = 0f;
+        foreach (var obj in shootableObjects)
+        {
+            totalProbability += obj.probability;
+        }
+
+        float randomPoint = Random.value * totalProbability;
+
+        foreach (var obj in shootableObjects)
+        {
+            if (randomPoint < obj.probability)
+            {
+                return obj.prefab;
+            }
+            else
+            {
+                randomPoint -= obj.probability;
+            }
+        }
+        return null;
+    }
+
+    #endregion
+
+    #region Gestion de la Rotation
 
     void HandleRotation()
     {
@@ -168,42 +317,78 @@ public class PlayerController : MonoBehaviour
             Vector3 mousePosition = Input.mousePosition;
             float screenWidth = Screen.width;
 
-            if (mousePosition.x <= 0)
-                mousePosition.x = 0;
-            if (mousePosition.x >= screenWidth)
-                mousePosition.x = screenWidth;
-
             float rotationDirection = 0f;
 
             if (mousePosition.x < screenWidth * 0.1f)
             {
-                // Tourner à gauche
                 rotationDirection = -1f;
             }
             else if (mousePosition.x > screenWidth * 0.9f)
             {
-                // Tourner à droite
                 rotationDirection = 1f;
             }
 
-            transform.Rotate(0f, rotationDirection * rotationSpeed * Time.deltaTime, 0f);
+            float rotationAmount = rotationDirection * rotationSpeed * Time.deltaTime;
+            currentYRotation += rotationAmount;
+
+            currentYRotation = Mathf.Clamp(currentYRotation, minYRotation, maxYRotation);
+
+            transform.localEulerAngles = new Vector3(0f, currentYRotation, 0f);
         }
     }
 
-    void UpdateViseurPosition()
+    #endregion
+
+    #region Vérification des Élèves
+
+    void CheckStudentsStatus()
     {
-        if (viseurRectTransform != null)
+        if (!canShootTeacher)
         {
-            // coordonée souri = coordonée canva ui (c'est chaud)
-            Vector2 mousePosition;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                viseurRectTransform.parent as RectTransform,
-                Input.mousePosition,
-                playerCamera,
-                out mousePosition);
+            Student[] students = FindObjectsOfType<Student>();
+            bool allKnockedOut = true;
 
-            // bouger le viseur
-            viseurRectTransform.localPosition = mousePosition;
+            foreach (Student student in students)
+            {
+                if (!student.IsKnockedOut)
+                {
+                    allKnockedOut = false;
+                    break;
+                }
+            }
+
+            if (allKnockedOut)
+            {
+                canShootTeacher = true;
+                UpdateAmmoText();
+                Debug.Log("ATOMISE LA PROF");
+
+                if (teacher != null)
+                {
+                    teacher.ActivateTeacher();
+                }
+            }
         }
     }
+
+    #endregion
+
+    #region Mise à jour de l'UI
+
+    void UpdateAmmoText()
+    {
+        if (ammoText != null)
+        {
+            if (canShootTeacher)
+            {
+                ammoText.text = "Munitions : Illimité";
+            }
+            else
+            {
+                ammoText.text = "Munitions : " + ammoCount.ToString();
+            }
+        }
+    }
+
+    #endregion
 }
