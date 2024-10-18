@@ -11,7 +11,7 @@ public class NoiseController : MonoBehaviour
 
     private void Awake()
     {
-        // S'assurer qu'un AudioSource est présent
+        // S'assurer qu'un AudioSource est prï¿½sent
         audioSource = GetComponent<AudioSource>();
         if (audioSource == null)
         {
@@ -28,7 +28,7 @@ public class NoiseController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Aucun son d'impact n'est assigné dans le NoiseController.");
+            Debug.LogWarning("Aucun son d'impact n'est assignï¿½ dans le NoiseController.");
         }
     }
 
@@ -44,14 +44,5 @@ public class NoiseController : MonoBehaviour
         GameManager.Instance.NoiseLevel -= noiseMinus;
         if (GameManager.Instance.NoiseLevel < 0)
             GameManager.Instance.NoiseLevel = 0;
-    }
-
-    private void Update()
-    {
-        // Optionnel : Afficher le niveau de bruit pour le débogage
-        Debug.Log(GameManager.Instance.NoiseLevel);
-        {
-            IncreaseNoiseLevel(50);
-        }
     }
 }

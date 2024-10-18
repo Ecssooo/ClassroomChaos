@@ -72,7 +72,7 @@ public class TeacherController : MonoBehaviour
     public IEnumerator RotateTeacherInRegard()
     {
         //Rotate Teacher in front of the classroom
-        rb.DORotate(new Vector3(0, 180, 0), 1f);
+        rb.DORotate(new Vector3(-90, 0, 0), 1f);
         yield return new WaitForSeconds(1);
         GameManager.Instance.TeacherState = TeacherStates.Regard;
     }
@@ -80,7 +80,7 @@ public class TeacherController : MonoBehaviour
     public IEnumerator RotateTeacherInCooldown()
     {
         //Rotate Teacher in front of the board
-        rb.DORotate(new Vector3(0, 0, 0), 1f);
+        rb.DORotate(new Vector3(-90, 180, 0), 1f);
         yield return new WaitForSeconds(1);
         GameManager.Instance.TeacherState = TeacherStates.Cooldown;
     }

@@ -16,13 +16,13 @@ public class PlayerController : MonoBehaviour
 {
     #region Variables
 
-    [Header("Objets à lancer")]
+    [Header("Objets ï¿½ lancer")]
     [SerializeField]
     private List<ShootableObject> shootableObjects;
 
-    [Header("Paramètres de tir")]
+    [Header("Paramï¿½tres de tir")]
     public float objectSpeed = 50f;
-    private int ammoCount = 0;
+    public int ammoCount = 0;
 
     [Header("Camera")]
     public Camera playerCamera;
@@ -59,7 +59,7 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Méthodes Unity
+    #region Mï¿½thodes Unity
 
     void Start()
     {
@@ -175,7 +175,7 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Gestion de la Visée
+    #region Gestion de la Visï¿½e
 
     void HandleAiming()
     {
@@ -268,16 +268,16 @@ public class PlayerController : MonoBehaviour
                         UpdateAmmoText();
                     }
 
-                    Debug.Log("Tir effectué !");
+                    Debug.Log("Tir effectuï¿½ !");
                 }
                 else
                 {
-                    Debug.LogError("Aucun objet sélectionné pour le tir.");
+                    Debug.LogError("Aucun objet sï¿½lectionnï¿½ pour le tir.");
                 }
             }
             else
             {
-                Debug.Log("Aucun objet à lancer.");
+                Debug.Log("Aucun objet ï¿½ lancer.");
             }
         }
     }
@@ -339,7 +339,7 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Vérification des Élèves
+    #region Vï¿½rification des ï¿½lï¿½ves
 
     void CheckStudentsStatus()
     {
@@ -373,7 +373,7 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Mise à jour de l'UI
+    #region Mise ï¿½ jour de l'UI
 
     void UpdateAmmoText()
     {
@@ -381,11 +381,11 @@ public class PlayerController : MonoBehaviour
         {
             if (canShootTeacher)
             {
-                ammoText.text = "Munitions : Illimité";
+                ammoText.text = "Munitions : Illimitï¿½";
             }
             else
             {
-                ammoText.text = "Munitions : " + ammoCount.ToString();
+                ammoText.text = ammoCount.ToString();
             }
         }
     }
