@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Sons")]
     public AudioClip reloadSound;
-    private AudioSource audioSource;
+    public AudioSource audioSource;
 
     private bool isReloading = false;
     private bool isAiming = false;
@@ -120,9 +120,8 @@ public class PlayerController : MonoBehaviour
 
             if (reloadSound != null)
             {
-                audioSource.clip = reloadSound;
-                audioSource.loop = true;
-                audioSource.Play();
+               
+                audioSource.PlayOneShot(reloadSound);
             }
 
             if (timerSlider != null)
